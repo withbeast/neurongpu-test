@@ -81,7 +81,7 @@ NeuronGPU::NeuronGPU()
   
   on_exception_ = ON_EXCEPTION_EXIT;
 
-  verbosity_level_ = 3;
+  verbosity_level_ = 2;
   
 #ifdef HAVE_MPI
   connect_mpi_ = new ConnectMpi;
@@ -252,11 +252,9 @@ int NeuronGPU::Calibrate()
       std::cout << "Calibrating on host " << connect_mpi_->mpi_id_ << " ...\n";
     }
     else {
-      std::cout << "Calibrating ...\n";
     }
     gpuErrchk(cudaMemcpyToSymbol(NeuronGPUMpiFlag, &mpi_flag_, sizeof(bool)));
 #else
-    std::cout << "Calibrating ...\n";
 #endif
   }
   
@@ -311,9 +309,6 @@ int NeuronGPU::Simulate()
   StartSimulation();
   
   for (int it=0; it<Nt_; it++) {
-    if (it%100==0 && verbosity_level_>=2) {
-      printf("%.3f\n", neural_time_);
-    }
     SimulationStep();
   }
   EndSimulation();
@@ -339,17 +334,20 @@ int NeuronGPU::StartSimulation()
       std::cout << "Simulating on host " << connect_mpi_->mpi_id_ << " ...\n";
     }
     else {
-      std::cout << "Simulating ...\n";
     }
 #else
-    std::cout << "Simulating ...\n";
 #endif
-    printf("Neural activity simulation time: %.3f\n", sim_time_);
   }
   
   neur_t0_ = neural_time_;
   it_ = 0;
   Nt_ = (int)round(sim_time_/time_resolution_);
+
+  if (verbosity_level_ >= 2) {
+	  std::size_t n = 0;
+	  for (auto * pop : node_vect_) n += pop->n_node_;
+	  printf("%zu\n", n);
+  }
   
   return 0;
 }
@@ -357,7 +355,6 @@ int NeuronGPU::StartSimulation()
 int NeuronGPU::EndSimulation()
 {
   if (verbosity_level_>=2) {
-    printf("%.3f\n", neural_time_);
   }
   end_real_time_ = getRealTime();
 
@@ -470,6 +467,22 @@ int NeuronGPU::SimulationStep()
   time_mark = getRealTime();
   gpuErrchk(cudaMemcpy(&n_spikes, d_SpikeNum, sizeof(int),
 		       cudaMemcpyDeviceToHost));
+
+  if (verbosity_level_ >= 2) {
+	 static std::vector<int> spikes;
+	 spikes.resize(n_spikes);
+	gpuErrchk(cudaMemcpy(spikes.data(), d_SpikeSourceIdx, n_spikes * sizeof(int),
+			   cudaMemcpyDeviceToHost));
+	
+	std::sort(spikes.begin(), spikes.end());
+	
+	auto delim = "";
+	for (auto s : spikes) {
+		printf("%s%d", delim, s);
+		delim = ",";
+	}
+	printf("\n");
+  }
 
   ClearGetSpikeArrays();    
   if (n_spikes > 0) {
