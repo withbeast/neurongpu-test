@@ -1,4 +1,7 @@
 import sys
+
+sys.path.append('../../pythonlib')
+
 import ctypes
 import neurongpu as ngpu
 from random import randrange
@@ -8,8 +11,6 @@ if len(sys.argv) != 2:
     quit()
     
 order = int(sys.argv[1])//5
-
-print("Building ...")
 
 ngpu.SetRandomSeed(1234) # seed for GPU random numbers
 
@@ -81,40 +82,4 @@ pg_syn_dict={"weight": poiss_weight, "delay": poiss_delay,
 
 ngpu.Connect(pg, neuron, pg_conn_dict, pg_syn_dict)
 
-
-filename = "test_brunel_net.dat"
-i_neuron_arr = [neuron[37], neuron[randrange(n_neurons)], neuron[n_neurons-1]]
-i_receptor_arr = [0, 0, 0]
-# any set of neuron indexes
-# create multimeter record of V_m
-var_name_arr = ["V_m", "V_m", "V_m"]
-record = ngpu.CreateRecord(filename, var_name_arr, i_neuron_arr,
-                                i_receptor_arr)
-
 ngpu.Simulate()
-
-nrows=ngpu.GetRecordDataRows(record)
-ncol=ngpu.GetRecordDataColumns(record)
-#print nrows, ncol
-
-data_list = ngpu.GetRecordData(record)
-t=[row[0] for row in data_list]
-V1=[row[1] for row in data_list]
-V2=[row[2] for row in data_list]
-V3=[row[3] for row in data_list]
-
-import matplotlib.pyplot as plt
-
-plt.figure(1)
-plt.plot(t, V1)
-
-plt.figure(2)
-plt.plot(t, V2)
-
-plt.figure(3)
-plt.plot(t, V3)
-
-plt.draw()
-plt.pause(0.5)
-ngpu.waitenter("<Hit Enter To Close>")
-plt.close()

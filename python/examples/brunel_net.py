@@ -1,4 +1,7 @@
 import sys
+
+sys.path.append('../../pythonlib')
+
 import ctypes
 import neurongpu as ngpu
 from random import randrange
