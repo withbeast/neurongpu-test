@@ -59,14 +59,14 @@ __global__ void PoissGenSendSpikeKernel(curandState *curand_state, float t,
     float t_rel = t - origin - delay;
 
     if ((t_rel>=start) && (t_rel<=stop)){
-      int n = curand_poisson(curand_state+i_conn, time_step*rate);
-      if (n>0) { // //Send direct spike (i_target, port, weight*n);
+      float n = curand_uniform(curand_state+i_conn);// curand_poisson(curand_state+i_conn, time_step*rate);
+      if (n<time_step * rate) { // //Send direct spike (i_target, port, weight*n);
 	/////////////////////////////////////////////////////////////////
 	int i_group=NodeGroupMap[i_target];
 	int i = port*NodeGroupArray[i_group].n_node_ + i_target
 	  - NodeGroupArray[i_group].i_node_0_;
-	double d_val = (double)(weight*n);
-	atomicAddDouble(&NodeGroupArray[i_group].get_spike_array_[i], d_val); 
+	//double d_val = (double)(weight*n);
+	atomicAddDouble(&NodeGroupArray[i_group].get_spike_array_[i], weight); 
 	////////////////////////////////////////////////////////////////
       }
     }
