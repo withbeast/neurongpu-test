@@ -10,41 +10,57 @@ if len(sys.argv) != 2:
     print ("Usage: python %s n_neurons" % sys.argv[0])
     quit()
     
-order = int(sys.argv[1])//10
+N = int(sys.argv[1])
 
 ngpu.SetRandomSeed(1234) # seed for GPU random numbers
 
-n_receptors = 2
+NP = N // 10 * 5
+NE = N // 10 * 4
+NI = N // 10 * 1
+N = NP + NE + NI
 
-NE = 4 * order       # number of excitatory neurons
-NI = 1 * order       # number of inhibitory neurons
-n_neurons = NE + NI  # number of neurons in total
-
-Wex = 0.1
-Win = -0.5
+Wex = 0.1 * 20000 / N
+Win = -0.5 * 20000 / N
 
 # create poisson generator
 pg = ngpu.Create("poisson_generator")
 ngpu.SetStatus(pg, "rate", 20)
 
 # Create n_neurons neurons with n_receptor receptor ports
-neuron = ngpu.Create("iaf_psc_exp", n_neurons, n_receptors)
-exc_neuron = neuron[0:NE]      # excitatory neurons
-inh_neuron = neuron[NE:n_neurons]   # inhibitory neurons
-  
+neuron = ngpu.Create("iaf_psc_exp", N, 2)
+P = neuron[0:NP]      # excitatory neurons
+E = neuron[NP:NP+NE]   # inhibitory neurons
+I = neuron[NP+NE:N]
+
 # receptor parameters
-ngpu.SetStatus(neuron, {"V_m_rel": 0, "V_reset_rel": 0, "Theta_rel": 20, "t_ref": 0})
+ngpu.SetStatus(P, {"V_m_rel": 0, "V_reset_rel": 0, "Theta_rel": 20, "t_ref": 0})
+ngpu.SetStatus(E, {"V_m_rel": 0, "V_reset_rel": 0, "Theta_rel": 20, "t_ref": 2})
+ngpu.SetStatus(I, {"V_m_rel": 0, "V_reset_rel": 0, "Theta_rel": 20, "t_ref": 2})
 
-exc_conn_dict={"rule": "fixed_total_number", "total_num": NE * n_neurons // 10}
-exc_syn_dict={"weight": 0, "delay": 1.5, "receptor":0}
-ngpu.Connect(exc_neuron, neuron, exc_conn_dict, exc_syn_dict)
+ngpu.Connect(pg, P, {"rule": "all_to_all"}, {"weight": 20, "delay": 0.1, "receptor":0})
 
-inh_conn_dict={"rule": "fixed_total_number", "total_num": NI * n_neurons // 10}
-inh_syn_dict={"weight": 0, "delay": 1.5, "receptor":1}
-ngpu.Connect(inh_neuron, neuron, inh_conn_dict, inh_syn_dict)
+ngpu.Connect(P, E,
+	{"rule": "fixed_total_number", "total_num": NP * NE // 10},
+	{"weight": Wex, "delay": 1.5, "receptor":0})
 
-pg_conn_dict={"rule": "all_to_all"}
-pg_syn_dict={"weight": 10, "delay": 1.5, "receptor":0}
-ngpu.Connect(pg, neuron, pg_conn_dict, pg_syn_dict)
+ngpu.Connect(P, I,
+	{"rule": "fixed_total_number", "total_num": NP * NI // 10},
+	{"weight": Wex, "delay": 1.5, "receptor":0})
+
+ngpu.Connect(E, E,
+	{"rule": "fixed_total_number", "total_num": NE * NE // 10},
+	{"weight": Wex, "delay": 1.5, "receptor":0})
+
+ngpu.Connect(E, I,
+	{"rule": "fixed_total_number", "total_num": NE * NI // 10},
+	{"weight": Wex, "delay": 1.5, "receptor":0})
+
+ngpu.Connect(I, E,
+	{"rule": "fixed_total_number", "total_num": NI * NE // 10},
+	{"weight": Win, "delay": 1.5, "receptor":1})
+
+ngpu.Connect(I, I,
+	{"rule": "fixed_total_number", "total_num": NI * NI // 10},
+	{"weight": Win, "delay": 1.5, "receptor":1})
 
 ngpu.Simulate()
