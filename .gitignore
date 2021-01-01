@@ -6,7 +6,6 @@
 *.dylib
 *.pyc
 *.pyo
-Makefile
 Makefile.in
 build
 build_mac
