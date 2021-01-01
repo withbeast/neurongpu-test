@@ -104,11 +104,11 @@ __global__ void iaf_psc_exp_Update(int n_node, int i_node_0, float *var_arr,
       refractory_step -= 1.0;
     }
     else { // neuron is not refractory, so evolve V
-      V_m_rel = V_m_rel * P22 + I_syn_ex * P21ex + I_syn_in * P21in + I_e * P20;
+      V_m_rel += I_syn_ex + I_syn_in - 0.005f * V_m_rel;
     }
     // exponential decaying PSCs
-    I_syn_ex *= P11ex;
-    I_syn_in *= P11in;
+    I_syn_ex = 0;
+    I_syn_in = 0;
     
     if (V_m_rel >= Theta_rel ) { // threshold crossing
       PushSpike(i_node_0 + i_neuron, 1.0);
