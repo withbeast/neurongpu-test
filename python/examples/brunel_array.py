@@ -83,6 +83,21 @@ def make_vogels(N):
 		{"weight": Win, "delay": 0.8, "receptor":1})
 
 
+def make_synth(N, pconnect, pfire):
+	pg = ngpu.Create("poisson_generator")
+	ngpu.SetStatus(pg, "rate", 10000 * pfire)
+
+	neuron = ngpu.Create("iaf_psc_exp", N, 2)
+
+	ngpu.SetStatus(neuron, {"V_m_rel": 0, "V_reset_rel": 0, "Theta_rel": 20, "t_ref": 0})
+
+	ngpu.Connect(pg, neuron, {"rule": "all_to_all"}, {"weight": 20, "delay": 0.1, "receptor":0})
+
+	ngpu.Connect(neuron, neuron,
+		{"rule": "fixed_total_number", "total_num": int(N * N * pconnect)},
+		{"weight": 0, "delay": 0.1, "receptor":0})
+
+
 if len(sys.argv) != 2:
     print ("Usage: python %s n_neurons" % sys.argv[0])
     quit()
@@ -92,6 +107,7 @@ N = int(sys.argv[1])
 ngpu.SetRandomSeed(1234) # seed for GPU random numbers
 
 #make_brunel(N)
-make_vogels(N)
+#make_vogels(N)
+make_synth(N, 0.00156, 0.005)
 
 ngpu.Simulate()
