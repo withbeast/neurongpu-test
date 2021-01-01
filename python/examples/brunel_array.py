@@ -52,6 +52,37 @@ def make_brunel(N):
 		{"weight": Win, "delay": 1.5, "receptor":1})
 
 
+def make_vogels(N):
+	NE = N // 5 * 4
+	NI = N // 5 * 1
+	N = NE + NI
+
+	Wex = 0.4 * 16000000 / N / N
+	Win = 5.1 * 16000000 / N / N
+
+	neuron = ngpu.Create("iaf_psc_exp_g", N, 2)
+	E = neuron[0:NE]   # inhibitory neurons
+	I = neuron[NE:N]
+
+	ngpu.SetStatus(neuron, {"V_m_rel": -60, "V_reset_rel": -60, "Theta_rel": -50, "t_ref": 5, "G_ex": 0, "G_in": 0})
+
+	ngpu.Connect(E, E,
+		{"rule": "fixed_total_number", "total_num": NE * NE // 50},
+		{"weight": Wex, "delay": 0.8, "receptor":0})
+
+	ngpu.Connect(E, I,
+		{"rule": "fixed_total_number", "total_num": NE * NI // 50},
+		{"weight": Wex, "delay": 0.8, "receptor":0})
+
+	ngpu.Connect(I, E,
+		{"rule": "fixed_total_number", "total_num": NI * NE // 50},
+		{"weight": Win, "delay": 0.8, "receptor":1})
+
+	ngpu.Connect(I, I,
+		{"rule": "fixed_total_number", "total_num": NI * NI // 50},
+		{"weight": Win, "delay": 0.8, "receptor":1})
+
+
 if len(sys.argv) != 2:
     print ("Usage: python %s n_neurons" % sys.argv[0])
     quit()
@@ -60,6 +91,7 @@ N = int(sys.argv[1])
 
 ngpu.SetRandomSeed(1234) # seed for GPU random numbers
 
-make_brunel(N)
+#make_brunel(N)
+make_vogels(N)
 
 ngpu.Simulate()

@@ -29,6 +29,8 @@ extern __constant__ float NeuronGPUTimeResolution;
 #define I_syn_in var[i_I_syn_in]
 #define V_m_rel var[i_V_m_rel]
 #define refractory_step var[i_refractory_step]
+#define G_ex var[i_G_ex]
+#define G_in var[i_G_in]
 
 #define tau_m param[i_tau_m]
 #define C_m param[i_C_m]
@@ -103,13 +105,15 @@ __global__ void iaf_psc_exp_g_Update(int n_node, int i_node_0, float *var_arr,
       // neuron is absolute refractory
       refractory_step -= 1.0;
     }
-    else { // neuron is not refractory, so evolve V
-      V_m_rel += I_syn_ex + I_syn_in - 0.005f * V_m_rel;
+	else { // neuron is not refractory, so evolve V
+      V_m_rel +=  ((-60 - V_m_rel) + G_ex * (0 - V_m_rel) + G_in * (-80 - V_m_rel) + 20) * 0.005f;
     }
-    // exponential decaying PSCs
-    I_syn_ex = 0;
-    I_syn_in = 0;
-    
+	// exponential decaying PSCs
+	G_ex += I_syn_ex - 0.02f * G_ex;
+	G_in += I_syn_in - 0.01f * G_in;
+	I_syn_ex = 0;
+	I_syn_in = 0;
+	
     if (V_m_rel >= Theta_rel ) { // threshold crossing
       PushSpike(i_node_0 + i_neuron, 1.0);
       V_m_rel = V_reset_rel;
@@ -164,6 +168,8 @@ int iaf_psc_exp_g::Init(int i_node_0, int n_node, int /*n_port*/,
   SetScalVar(0, n_node, "I_syn_in", 0.0 );
   SetScalVar(0, n_node, "V_m_rel", -70.0 - (-70.0) ); // in mV, relative to E_L
   SetScalVar(0, n_node, "refractory_step", 0 );
+  SetScalVar(0, n_node, "G_ex", 0 );
+  SetScalVar(0, n_node, "G_in", 0 );
 
   // multiplication factor of input signal is always 1 for all nodes
   float input_weight = 1.0;

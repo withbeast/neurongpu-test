@@ -34,6 +34,8 @@ enum ScalVarIndexes {
   i_I_syn_in,            // postsynaptic current for inh. inputs
   i_V_m_rel,                 // membrane potential
   i_refractory_step,     // refractory step counter
+  i_G_ex,
+  i_G_in,
   N_SCAL_VAR
 };
 
@@ -66,7 +68,9 @@ const std::string iaf_psc_exp_g_scal_var_name[N_SCAL_VAR] = {
   "I_syn_ex",
   "I_syn_in",
   "V_m_rel",
-  "refractory_step"
+  "refractory_step",
+  "G_ex",
+  "G_in"
 };
 
 
