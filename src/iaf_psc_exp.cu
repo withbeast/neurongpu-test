@@ -50,7 +50,7 @@ extern __constant__ float NeuronGPUTimeResolution;
 #define P21in param[i_P21in]
 #define P22 param[i_P22]
 
-__device__
+static __device__
 double propagator_32( double tau_syn, double tau, double C, double h )
 {
   const double P32_linear = 1.0 / ( 2.0 * C * tau * tau ) * h * h

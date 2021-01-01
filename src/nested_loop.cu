@@ -130,10 +130,10 @@ int NestedLoop::CumulSumNestedLoop(int Nx, int *d_Ny, int i_func)
     }
     else {
       grid_dim_x = 64; // I think it's not necessary to increase it
-      if (Ny_sum>grid_dim_x*1024*65535) {
+      if (Ny_sum>grid_dim_x*1024*65535l) {
 	throw ngpu_exception(std::string("Ny sum ") + std::to_string(Ny_sum) +
 			     " larger than threshold "
-			     + std::to_string(grid_dim_x*1024*65535));
+			     + std::to_string(grid_dim_x*1024*65535l));
       }
       grid_dim_y = (Ny_sum + grid_dim_x*1024 -1) / (grid_dim_x*1024);
     }

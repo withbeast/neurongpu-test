@@ -47,7 +47,7 @@ NodeSeq NeuronGPU::Create(std::string model_name, int n_node /*=1*/,
     throw ngpu_exception("Number of ports must be >= zero.");
   }
   if (model_name == neuron_model_name[i_iaf_psc_exp_g_model]) {
-    n_port = 1;
+    n_port = 2;
     iaf_psc_exp_g *iaf_psc_exp_g_group = new iaf_psc_exp_g;
     node_vect_.push_back(iaf_psc_exp_g_group);
   }
