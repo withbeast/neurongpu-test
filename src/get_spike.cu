@@ -69,7 +69,7 @@ __device__ void NestedLoopFunction0(int i_spike, int i_syn)
     - NodeGroupArray[i_group].i_node_0_;
   double d_val = (double)(height*weight);
 
-  atomicAddDouble(&NodeGroupArray[i_group].get_spike_array_[i], d_val);
+  atomicAdd(&NodeGroupArray[i_group].get_spike_array_[i], d_val);
   if (syn_group>0) {
     ConnectionGroupTargetSpikeTime[i_conn*NSpikeBuffer+i_source][i_syn]
       = (unsigned short)(NeuronGPUTimeIdx & 0xffff);

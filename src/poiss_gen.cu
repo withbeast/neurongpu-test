@@ -66,7 +66,7 @@ __global__ void PoissGenSendSpikeKernel(curandState *curand_state, float t,
 	int i = port*NodeGroupArray[i_group].n_node_ + i_target
 	  - NodeGroupArray[i_group].i_node_0_;
 	//double d_val = (double)(weight*n);
-	atomicAddDouble(&NodeGroupArray[i_group].get_spike_array_[i], weight); 
+	atomicAdd(&NodeGroupArray[i_group].get_spike_array_[i], weight); 
 	////////////////////////////////////////////////////////////////
       }
     }
