@@ -166,7 +166,7 @@ int NeuronGPU::_ConnectFixedTotalNumber
 (T1 source, int n_source, T2 target, int n_target, int n_conn,
  SynSpec &syn_spec)
 {
-  unsigned int *rnd = RandomInt(2*n_conn);
+  unsigned int *rnd = RandomInt(2l*n_conn);
 #ifdef _OPENMP
   omp_lock_t *lock = new omp_lock_t[n_source];
   for (int i=0; i<n_source; i++) {
@@ -175,8 +175,8 @@ int NeuronGPU::_ConnectFixedTotalNumber
 #pragma omp parallel for default(shared)
 #endif
   for (int i_conn=0; i_conn<n_conn; i_conn++) {
-    int isn = rnd[2*i_conn] % n_source;
-    int itn = rnd[2*i_conn+1] % n_target;
+    int isn = rnd[2l*i_conn] % n_source;
+    int itn = rnd[2l*i_conn+1] % n_target;
 #ifdef _OPENMP
     omp_set_lock(&(lock[isn]));
 #endif
@@ -557,7 +557,7 @@ template <class T1, class T2>
 					 target.i_node_, n_target,
 					    n_conn, syn_spec);
   }
-  unsigned int *rnd = RandomInt(2*n_conn);
+  unsigned int *rnd = RandomInt(2l*n_conn);
   if (MpiId()==source.i_host_ || MpiId()==target.i_host_) {
     int *i_remote_node_arr = new int[n_conn];
     int i_new_remote_node;
