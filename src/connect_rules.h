@@ -576,7 +576,7 @@ template <class T1, class T2>
 				 source.i_host_);
       for (int i_conn=0; i_conn<n_conn; i_conn++) {
 	int i_remote_node = i_remote_node_arr[i_conn];
-	int itn = rnd[2*i_conn+1] % n_target;
+	int itn = rnd[2l*i_conn+1] % n_target;
 	_SingleConnect<int,T2>(i_remote_node, 0, target.i_node_, itn,
 			       i_conn, syn_spec);
       }
@@ -584,7 +584,7 @@ template <class T1, class T2>
     else if (MpiId() == source.i_host_) {
       connect_mpi_->MPI_Recv_int(&i_new_remote_node, 1, target.i_host_);
       for (int i_conn=0; i_conn<n_conn; i_conn++) {
-	int isn = rnd[2*i_conn] % n_source;
+	int isn = rnd[2l*i_conn] % n_source;
 	int i_source_node = source.GetINode(isn);	  
 	int i_remote_node = -1;
 	for (std::vector<ExternalConnectionNode >::iterator it =
