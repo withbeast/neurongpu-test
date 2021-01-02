@@ -160,13 +160,22 @@ int NeuronGPU::_ConnectAllToAll
 
   return 0;
 }
-
+#include <memory>
 template <class T1, class T2>
 int NeuronGPU::_ConnectFixedTotalNumber
 (T1 source, int n_source, T2 target, int n_target, int n_conn,
  SynSpec &syn_spec)
 {
-  unsigned int *rnd = RandomInt(2l*n_conn);
+	auto rnd = [this]() {
+		constexpr int n = 100'000'000;
+		static std::unique_ptr<unsigned int []> buffer;
+		static int i = n;
+
+		if (i >= n) { buffer.reset(RandomInt(n)); i = 0; }
+
+		return buffer[i++];
+	};
+  //unsigned int *rnd = RandomInt(2l*n_conn);
 #ifdef _OPENMP
   omp_lock_t *lock = new omp_lock_t[n_source];
   for (int i=0; i<n_source; i++) {
@@ -175,8 +184,8 @@ int NeuronGPU::_ConnectFixedTotalNumber
 #pragma omp parallel for default(shared)
 #endif
   for (int i_conn=0; i_conn<n_conn; i_conn++) {
-    int isn = rnd[2l*i_conn] % n_source;
-    int itn = rnd[2l*i_conn+1] % n_target;
+    int isn = rnd() % n_source;// rnd[2l*i_conn] % n_source;
+    int itn = rnd() % n_target;// rnd[2l*i_conn+1] % n_target;
 #ifdef _OPENMP
     omp_set_lock(&(lock[isn]));
 #endif
@@ -185,7 +194,7 @@ int NeuronGPU::_ConnectFixedTotalNumber
       omp_unset_lock(&(lock[isn]));
 #endif
   }
-  delete[] rnd;
+  //delete[] rnd;
 #ifdef _OPENMP
   delete[] lock;
 #endif
