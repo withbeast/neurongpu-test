@@ -1,6 +1,8 @@
 import sys
 sys.path.append('../../pythonlib')
 
+import math
+import argparse
 import neurongpu as ngpu
 
 
@@ -83,7 +85,7 @@ def make_vogels(N):
 		{"weight": Win, "delay": 0.8, "receptor":1})
 
 
-def make_synth(N, pconnect, pfire):
+def make_synth(N, pconnect, pfire, delay):
 	pg = ngpu.Create("poisson_generator")
 	ngpu.SetStatus(pg, "rate", 10000 * pfire)
 
@@ -95,19 +97,36 @@ def make_synth(N, pconnect, pfire):
 
 	ngpu.Connect(neuron, neuron,
 		{"rule": "fixed_total_number", "total_num": int(N * N * pconnect)},
-		{"weight": 0, "delay": 0.1, "receptor":0})
+		{"weight": 0, "delay": 0.1 * delay, "receptor":0})
 
 
-if len(sys.argv) != 2:
-    print ("Usage: python %s n_neurons" % sys.argv[0])
-    quit()
-    
-N = int(sys.argv[1])
+params = argparse.ArgumentParser()
+params.add_argument("--model", type=str)
+params.add_argument("--nsyn", type=int)
+params.add_argument("--pconnect", type=float)
+params.add_argument("--pfire", type=float)
+params.add_argument("--delay", type=int)
+params, trash = params.parse_known_args()
 
 ngpu.SetRandomSeed(1234) # seed for GPU random numbers
 
-#make_brunel(N)
-#make_vogels(N)
-make_synth(N, 0.00156, 0.005)
+model = ""
+if params.model == "vogels":
+	model = "vogels"
+	make_vogels(int(math.sqrt(params.nsyn / 0.02)))
+elif params.model == "brunel":
+	make_brunel(int(math.sqrt(params.nsyn / 0.05)))
+	model = "brunel"
+elif params.model == "synth":
+	make_synth(int(math.sqrt(params.nsyn / params.pconnect)), params.pconnect, params.pfire, params.delay)
+	model = "synth_" + str(params.pconnect) + "_" + str(params.pfire) + "_" + str(params.delay)
+
+print("{")
+print("\t\"sim\": \"NeuronGPU\",")
+print("\t\"model\": \"" + model + "\",")
+print("\t\"#syn\": " + str(params.nsyn) + ",")
+print("\t\"#gpus\": 1,")
 
 ngpu.Simulate()
+
+print("}")

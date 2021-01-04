@@ -81,7 +81,7 @@ NeuronGPU::NeuronGPU()
   
   on_exception_ = ON_EXCEPTION_EXIT;
 
-  verbosity_level_ = 2;
+  verbosity_level_ = 1;
   
 #ifdef HAVE_MPI
   connect_mpi_ = new ConnectMpi;
@@ -382,10 +382,10 @@ int NeuronGPU::EndSimulation()
 	      << "\n";
   }
   if (verbosity_level_>=1) {
-    printf("Build real time = %lf\n",
-	   (build_real_time_ - start_real_time_));
-    printf("Simulation real time = %lf\n",
+    printf("\t\"simtime\": %lf,\n",
 	   (end_real_time_ - build_real_time_));
+	printf("\t\"setuptime\": %lf\n",
+	   (build_real_time_ - start_real_time_));
   }
   
   return 0;
