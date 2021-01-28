@@ -71,7 +71,7 @@ NeuronGPU::NeuronGPU()
   start_real_time_ = getRealTime();
   max_spike_buffer_size_ = 20;
   t_min_ = 0.0;
-  sim_time_ = 1000.0;        //Simulation time in ms
+  sim_time_ = 10000.0;        //Simulation time in ms
   n_poiss_node_ = 0;
   SetTimeResolution(0.1);  // time resolution in ms
 
@@ -383,7 +383,7 @@ int NeuronGPU::EndSimulation()
   }
   if (verbosity_level_>=1) {
     printf("\t\"simtime\": %lf,\n",
-	   (end_real_time_ - build_real_time_));
+	   (end_real_time_ - build_real_time_) * 0.1);
 	printf("\t\"setuptime\": %lf\n",
 	   (build_real_time_ - start_real_time_));
   }
