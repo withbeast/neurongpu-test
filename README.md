@@ -1,4 +1,3 @@
-This is our fork of the [NeuronGPU simulator](https://github.com/golosio/NeuronGPU) used to implement the benchmarks for our [IJCNN 2021 paper](https://bautembach.de/#multi-spice). You can find the benchmark code in [`python/examples/brunel_array.py`](https://github.com/denniskb/neurongpu/blob/master/python/examples/brunel_array.py)
 
 # NeuronGPU
 A GPU-MPI library for simulation of large-scale networks of spiking neurons.
